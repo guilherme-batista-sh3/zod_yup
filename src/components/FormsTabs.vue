@@ -44,6 +44,30 @@
           <p v-for="errors of $form[fields].errors">{{ errors.message }}</p>
         </Message>
       </div>
+      <Form
+        v-slot="$form"
+        :initialValues
+        :resolver="
+          yupResolver(
+            yup.object({ SubValor: yup.number().integer().required() })
+          )
+        "
+        :validateOnValueUpdate="false"
+        @submit="onFormSubmit"
+        class="flex flex-col gap-4 ml-4 sm:w-56"
+      >
+        Subform:
+        <InputText name="SubValor" type="number" placeholder="subvalor" fluid />
+        Regras: Numero inteiro
+        <Sh3Button
+          ref="subSubmitButton"
+          type="submit"
+          severity="secondary"
+          label="Sub-Submit"
+          class="mx-2"
+        />
+        <pre class="whitespace-pre-wrap">{{ $form }}</pre>
+      </Form>
       <Sh3Button
         ref="submitButton"
         id="submitButton"
@@ -54,7 +78,7 @@
       />
       <Sh3Button
         @click="testar($form)"
-        label="Teste submit x100"
+        label="Teste validation x100"
         class="w-40 m-auto"
       />
       <pre class="whitespace-pre-wrap">{{ $form }}</pre>
@@ -163,7 +187,8 @@ const testar = (data) => {
   ))
     values[filter] = data[filter].value;
 
-  const start = performance.now();
+  let start = performance.now();
+  let timesArray = [];
 
   for (let i = 0; i < 100; i++) {
     if (schemaValue.value == "zod") {
@@ -171,10 +196,13 @@ const testar = (data) => {
     } else {
       yupSchema.validate(values);
     }
+    timesArray.push(performance.now() - start);
+    start = performance.now();
   }
   // document.getElementById("submitButton").click();
 
-  const end = performance.now();
-  console.log(`Execution time: ${end - start} ms`);
+  const sum = timesArray.reduce((a, b) => a + b, 0);
+  console.log(`Total time: ${sum} ms`);
+  console.log(`Mean time: ${sum / timesArray.length} ms`);
 };
 </script>
